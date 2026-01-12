@@ -28,17 +28,22 @@ footer{text-align:center;font-size:13px;color:#666;margin:10px}
 <input type="file" id="upload" accept="image/*">
 
 <div class="flex">
-<button onclick="setSize(413,531)">Passport</button>
-<button onclick="setSize(600,800)">ID Card</button>
-<button onclick="setSize(2480,3508)">A4</button>
-<button onclick="setSize(1200,480)">10×4 Banner</button>
+<button onclick="setInch(1.38,1.77)">Passport</button>
+<button onclick="setInch(2,3)">ID Card</button>
+<button onclick="setInch(8.27,11.69)">A4</button>
+<button onclick="setInch(120,48)">10×4 Banner</button>
 </div>
 
-<label>Width (px)</label>
-<input type="number" id="w">
+<label>Width (inch)</label>
+<input type="number" id="win" step="0.1">
 
-<label>Height (px)</label>
-<input type="number" id="h">
+<label>Height (inch)</label>
+<input type="number" id="hin" step="0.1">
+
+<label>
+<input type="checkbox" id="lockRatio" checked>
+Ratio Lock
+</label>
 
 <label>Format</label>
 <select id="format">
@@ -63,7 +68,7 @@ footer{text-align:center;font-size:13px;color:#666;margin:10px}
 <input type="range" id="sharpen" min="0" max="5" step="1" value="0">
 
 <label>BG Remove Strength</label>
-<input type="range" id="bgPower" min="10" max="80" value="35">
+<input type="range" id="bgPower" min="10" max="80" value="40">
 
 <div class="flex">
 <button class="red" onclick="removeBG()">Auto BG Remove</button>
@@ -85,6 +90,9 @@ const ctx=canvas.getContext("2d");
 let img=new Image();
 let eraser=false;
 
+let dpi = 300;
+let ratio = 1;
+
 upload.onchange=e=>{
  let r=new FileReader();
  r.onload=()=>img.src=r.result;
@@ -92,46 +100,74 @@ upload.onchange=e=>{
 };
 
 img.onload=()=>{
- w.value=img.width;
- h.value=img.height;
+ ratio = img.width / img.height;
+ win.value = (img.width / dpi).toFixed(2);
+ hin.value = (img.height / dpi).toFixed(2);
  draw();
 };
 
 function draw(){
- canvas.width=w.value;
- canvas.height=h.value;
+ let pxW = win.value * dpi;
+ let pxH = hin.value * dpi;
+
+ canvas.width = pxW;
+ canvas.height = pxH;
+
+ ctx.clearRect(0,0,canvas.width,canvas.height);
  ctx.filter=`brightness(${bright.value}) contrast(${contrast.value}) saturate(${saturate.value})`;
  ctx.drawImage(img,0,0,canvas.width,canvas.height);
  ctx.filter="none";
+
  if(sharpen.value>0) sharpenImage();
 }
 
-w.oninput=h.oninput=bright.oninput=contrast.oninput=saturate.oninput=sharpen.oninput=draw;
+function setInch(wi,hi){
+ win.value = wi;
+ hin.value = hi;
+ ratio = wi / hi;
+ draw();
+}
 
-function setSize(x,y){w.value=x;h.value=y;draw();}
+win.oninput = ()=>{
+ if(lockRatio.checked){
+   hin.value = (win.value / ratio).toFixed(2);
+ }
+ draw();
+};
+
+hin.oninput = ()=>{
+ if(lockRatio.checked){
+   win.value = (hin.value * ratio).toFixed(2);
+ }
+ draw();
+};
+
+bright.oninput=contrast.oninput=saturate.oninput=sharpen.oninput=draw;
 
 /* Sharpen */
 function sharpenImage(){
  let imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
  let d=imgData.data;
  let copy=new Uint8ClampedArray(d);
- let level=sharpen.value*0.25;
+ let level=sharpen.value*0.3;
  for(let i=4;i<d.length-4;i++){
    d[i]=d[i]+level*(d[i]-copy[i-4]);
  }
  ctx.putImageData(imgData,0,0);
 }
 
-/* Accurate BG Remove */
+/* Improved BG Remove */
 function removeBG(){
  let imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
  let d=imgData.data;
  let power=bgPower.value;
+
  for(let i=0;i<d.length;i+=4){
    let r=d[i],g=d[i+1],b=d[i+2];
    let avg=(r+g+b)/3;
    let diff=Math.abs(r-g)+Math.abs(r-b)+Math.abs(g-b);
-   if(avg>200 && diff<power){
+
+   if(avg>190 && diff<power){
      d[i+3]=0;
    }
  }
@@ -161,4 +197,3 @@ function download(){
 
 </body>
 </html>
-
