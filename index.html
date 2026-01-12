@@ -1,1 +1,164 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<title>DS Computer Classes | Advanced Image Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{margin:0;font-family:Arial;background:#eef2f5}
+header{background:#0d6efd;color:#fff;padding:12px;text-align:center;font-size:20px}
+.box{max-width:900px;margin:10px auto;background:#fff;padding:15px;border-radius:10px}
+input,select,button{width:100%;padding:8px;margin:5px 0;font-size:15px}
+button{background:#0d6efd;color:#fff;border:none;border-radius:6px}
+button.red{background:#dc3545}
+.flex{display:flex;gap:5px;flex-wrap:wrap}
+canvas{width:100%;border:1px solid #ccc;border-radius:6px;margin-top:8px;touch-action:none}
+label{font-size:14px}
+footer{text-align:center;font-size:13px;color:#666;margin:10px}
+</style>
+</head>
+
+<body>
+
+<header>DS Computer Classes – Advanced Image Editor</header>
+
+<div class="box">
+
+<input type="file" id="upload" accept="image/*">
+
+<div class="flex">
+<button onclick="setSize(413,531)">Passport</button>
+<button onclick="setSize(600,800)">ID Card</button>
+<button onclick="setSize(2480,3508)">A4</button>
+<button onclick="setSize(1200,480)">10×4 Banner</button>
+</div>
+
+<label>Width (px)</label>
+<input type="number" id="w">
+
+<label>Height (px)</label>
+<input type="number" id="h">
+
+<label>Format</label>
+<select id="format">
+<option value="image/jpeg">JPG</option>
+<option value="image/png">PNG</option>
+<option value="image/webp">WEBP</option>
+</select>
+
+<label>Quality</label>
+<input type="range" id="quality" min="0.6" max="1" step="0.05" value="1">
+
+<label>Brightness</label>
+<input type="range" id="bright" min="0.8" max="1.3" step="0.05" value="1">
+
+<label>Contrast</label>
+<input type="range" id="contrast" min="0.8" max="1.5" step="0.05" value="1">
+
+<label>Saturation</label>
+<input type="range" id="saturate" min="0.8" max="1.5" step="0.05" value="1">
+
+<label>Sharpen Level</label>
+<input type="range" id="sharpen" min="0" max="5" step="1" value="0">
+
+<label>BG Remove Strength</label>
+<input type="range" id="bgPower" min="10" max="80" value="35">
+
+<div class="flex">
+<button class="red" onclick="removeBG()">Auto BG Remove</button>
+<button onclick="eraser=true">Manual Erase</button>
+<button onclick="eraser=false">Stop Erase</button>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<button onclick="download()">Download Image</button>
+
+</div>
+
+<footer>© DS Computer Classes</footer>
+
+<script>
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+let img=new Image();
+let eraser=false;
+
+upload.onchange=e=>{
+ let r=new FileReader();
+ r.onload=()=>img.src=r.result;
+ r.readAsDataURL(e.target.files[0]);
+};
+
+img.onload=()=>{
+ w.value=img.width;
+ h.value=img.height;
+ draw();
+};
+
+function draw(){
+ canvas.width=w.value;
+ canvas.height=h.value;
+ ctx.filter=`brightness(${bright.value}) contrast(${contrast.value}) saturate(${saturate.value})`;
+ ctx.drawImage(img,0,0,canvas.width,canvas.height);
+ ctx.filter="none";
+ if(sharpen.value>0) sharpenImage();
+}
+
+w.oninput=h.oninput=bright.oninput=contrast.oninput=saturate.oninput=sharpen.oninput=draw;
+
+function setSize(x,y){w.value=x;h.value=y;draw();}
+
+/* Sharpen */
+function sharpenImage(){
+ let imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+ let d=imgData.data;
+ let copy=new Uint8ClampedArray(d);
+ let level=sharpen.value*0.25;
+ for(let i=4;i<d.length-4;i++){
+   d[i]=d[i]+level*(d[i]-copy[i-4]);
+ }
+ ctx.putImageData(imgData,0,0);
+}
+
+/* Accurate BG Remove */
+function removeBG(){
+ let imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+ let d=imgData.data;
+ let power=bgPower.value;
+ for(let i=0;i<d.length;i+=4){
+   let r=d[i],g=d[i+1],b=d[i+2];
+   let avg=(r+g+b)/3;
+   let diff=Math.abs(r-g)+Math.abs(r-b)+Math.abs(g-b);
+   if(avg>200 && diff<power){
+     d[i+3]=0;
+   }
+ }
+ ctx.putImageData(imgData,0,0);
+}
+
+/* Manual Eraser */
+canvas.addEventListener("mousemove",erase);
+canvas.addEventListener("touchmove",erase);
+
+function erase(e){
+ if(!eraser) return;
+ let rect=canvas.getBoundingClientRect();
+ let x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+ let y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
+ ctx.clearRect(x-12,y-12,24,24);
+}
+
+/* Download */
+function download(){
+ let link=document.createElement("a");
+ link.download="DS_Image";
+ link.href=canvas.toDataURL(format.value,quality.value);
+ link.click();
+}
+</script>
+
+</body>
+</html>
 
