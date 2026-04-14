@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classroom Connect Desktop</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="left-panel">
+      <h2>Classroom Connect</h2>
+      <p class="muted">Desktop-first prototype (WhatsApp style workflow)</p>
+
+      <section class="card">
+        <h3>Create / Switch ID</h3>
+        <input id="nameInput" placeholder="Name" />
+        <input id="emailInput" placeholder="Email" />
+        <button id="createBtn">Create ID</button>
+        <select id="userSwitch"></select>
+      </section>
+
+      <section class="card">
+        <h3>All IDs</h3>
+        <ul id="allUsers" class="list"></ul>
+      </section>
+
+      <section class="card">
+        <h3>Connection Requests</h3>
+        <ul id="requests" class="list"></ul>
+      </section>
+    </aside>
+
+    <main class="main-panel">
+      <header class="toolbar">
+        <div>
+          <h3 id="chatTitle">Select a connected user</h3>
+          <small id="activeUserLabel"></small>
+        </div>
+        <div class="toolbar-actions">
+          <button id="audioBtn">Audio Call</button>
+          <button id="videoBtn">Video Call</button>
+          <button id="screenBtn">Screen Share</button>
+          <button id="stopMediaBtn" class="warn">Stop Media</button>
+        </div>
+      </header>
+
+      <section class="media-zone card">
+        <video id="localVideo" autoplay muted playsinline></video>
+      </section>
+
+      <section class="chat-zone card">
+        <div id="messages" class="messages"></div>
+        <div class="composer">
+          <input id="msgInput" placeholder="Type message..." />
+          <input id="fileInput" type="file" />
+          <button id="sendBtn">Send</button>
+        </div>
+      </section>
+
+      <section class="card backup-row">
+        <h3>Backup & Restore</h3>
+        <div class="inline">
+          <input id="backupName" placeholder="Backup file name (optional)" />
+          <button id="saveBackupBtn">Save Backup</button>
+          <label class="restore-label">Restore JSON <input id="restoreInput" type="file" accept="application/json" /></label>
+        </div>
+        <p id="backupInfo" class="muted"></p>
+      </section>
+    </main>
+  </div>
+
+  <script src="./renderer.js"></script>
+</body>
+</html>

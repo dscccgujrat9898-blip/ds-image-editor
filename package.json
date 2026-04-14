@@ -1,0 +1,31 @@
+{
+  "name": "classroom-connect-desktop",
+  "version": "1.0.0",
+  "description": "Desktop-first local messenger prototype with chat, file transfer, request workflow, and backup/restore.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.ds.classroomconnect",
+    "productName": "Classroom Connect",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "artifactName": "Classroom-Connect-Setup-${version}.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  }
+}
